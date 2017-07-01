@@ -47,20 +47,20 @@
   (should (equal (a-get-in [] []) []))
   (should (equal (a-get-in [] [2] :foo) :foo)))
 
-(ert-deftest a-has-key?-test ()
-  (should (a-has-key? [1 2 3] 2))
-  (should (not (a-has-key? [1 2 3] 3)))
-  (should (not (a-has-key? [1 2 3] -1)))
-  (should (not (a-has-key? [1 2 3] :foo)))
+(ert-deftest a-has-key-test ()
+  (should (a-has-key [1 2 3] 2))
+  (should (not (a-has-key [1 2 3] 3)))
+  (should (not (a-has-key [1 2 3] -1)))
+  (should (not (a-has-key [1 2 3] :foo)))
   (should-error (a-has-key? 1 :nope))
 
-  (should (a-has-key? '((:a . 5)) :a))
-  (should (not (a-has-key? '((:a . 5)) :b)))
+  (should (a-has-key '((:a . 5)) :a))
+  (should (not (a-has-key '((:a . 5)) :b)))
 
   (let ((hash (make-hash-table :test #'equal)))
     (puthash :foo 123 hash)
-    (should (equal (a-has-key? hash :foo) t))
-    (should (equal (a-has-key? hash :bar) nil))))
+    (should (equal (a-has-key hash :foo) t))
+    (should (equal (a-has-key hash :bar) nil))))
 
 (ert-deftest a-assoc-test ()
   (should (equal (a-assoc '() :foo :bar) '((:foo . :bar))))
@@ -75,8 +75,7 @@
 
   (let ((hash (make-hash-table :test #'equal)))
     (puthash :foo 123 hash)
-    ;;TODO
-    ))
+    (should (a-equal (a-assoc hash :bar :val) '((:bar . :val) (:foo . 123))))))
 
 (ert-deftest a-keys-test ()
   (should (equal (a-keys '((:a . 1) (:b . 2))) '(:a :b)))

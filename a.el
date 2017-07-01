@@ -42,9 +42,7 @@
    (t (user-error "Not associative: %S" map))))
 
 (defun a-get-in (m ks &optional not-found)
-  "Return the value in a nested associative structure, where KS
-is a sequence of keys. Return nil if the key is not present, or
-the NOT-FOUND value if supplied."
+  "Return the value in a nested associative structure M, where KS is a sequence of keys. Return nil if the key is not present, or the NOT-FOUND value if supplied."
   (let ((result m))
     (cl-block nil
       (seq-doseq (k ks)
@@ -54,16 +52,17 @@ the NOT-FOUND value if supplied."
       result)))
 
 (defun a-has-key? (coll k)
-  "Check if the given associative collection COLL contains a
-certain key K. Like Clojure's `contains?', but more aptly named."
+  "Check if the given associative collection COLL contains a certain key K. Like Clojure's `contains?', but more aptly named."
   (cond
    ((listp coll)         (not (eq (alist-get k coll :not-found) :not-found)))
    ((vectorp coll)       (and (integerp k) (< -1 k (length coll))))
    ((hash-table-p coll)  (not (eq (gethash k coll :not-found) :not-found)))
    (t (user-error "Not associative: %S" coll))))
 
+(defalias 'a-has-key 'a-has-key?)
+
 (defun a-assoc-1 (coll k v)
-  "Like a-assoc, but only takes a single k-v pair. Internal helper function."
+  "Like a-assoc, (associate K with V in COLL) but only takes a single k-v pair. Internal helper function."
   (cond
    ((listp coll)
     (if (a-has-key? coll k)
@@ -82,14 +81,10 @@ certain key K. Like Clojure's `contains?', but more aptly named."
               copy)
           (vconcat coll (-repeat (- k (length coll)) nil) (list v)))))
 
-   ;; XXX vectorp duplicated? placeholder for hash-table, maybe?
-   ((vectorp coll)
-    (if (and (integerp k) (> k 0))
-        (if (< k (length coll))
-            (let ((copy (copy-sequence coll)))
-              (aset copy k v)
-              copy)
-          (vconcat coll (-repeat (- k (length coll)) nil) (list v)))))))
+   ((hash-table-p coll)
+    (let ((copy (copy-hash-table coll)))
+      (puthash k v copy)
+      copy))))
 
 (defun a-assoc (coll &rest kvs)
   "Return an updated collection COLL, associating values with keys KVS."
@@ -119,15 +114,13 @@ certain key K. Like Clojure's `contains?', but more aptly named."
     (hash-table-values coll))))
 
 (defun a-reduce-kv (fn from coll)
-  "Reduce an associative collection, starting with an initial
-value of FROM. The reducing functions receives the intermediate
-value, key, and value."
+  "Reduce an associative collection COLL, starting with an initial value of FROM. The reducing function FN receives the intermediate value, key, and value."
   (-reduce-from (lambda (acc key)
                   (funcall fn acc key (a-get coll key)))
                 from (a-keys coll)))
 
 (defun a-count (coll)
-  "Like length, but can also return the length of hash tables."
+  "Count the number of key-value pairs in COLL. Like length, but can also return the length of hash tables."
   (cond
    ((seqp coll)
     (length coll))
@@ -135,15 +128,17 @@ value, key, and value."
    ((hash-table-p coll)
     (hash-table-count coll))))
 
-;; 1) is it ok that collections of different types can be equal?
-;; 2) early termination would be nice for larger collections
+;; TODO: add a-eql which also checks type equality
+;; TODO: terminate early
 (defun a-equal (a b)
-  "Compare collections a and b for equality. Return true or false."
+  "Compare collections A and B for value equality. Return true if both collections have the same set of key-value pairs, or false otherwise. Association lists and hash tables with the same contents are considered equal."
   (and (eq (a-count a) (a-count b))
        (a-reduce-kv (lambda (bool k v)
                       (and bool (equal v (a-get b k))))
                     t
                     a)))
+
+(defalias 'a-equal 'a-equal?)
 
 (defun a-merge (&rest colls)
   "Merge multiple associative collections.
@@ -155,47 +150,49 @@ Return the type of the first collection COLLS."
                           that))
            colls))
 
-;; TODO a-merge-with 
+;; TODO a-merge-with
 
 (defun a-alist (&rest kvs)
-  "Create an association list from the given keys and values KVS, provided as a single list of arguments.  e.g.  (a-alist :foo
-123 :bar 456)"
+  "Create an association list from the given keys and values KVS, provided as a single list of arguments.
+For example: (a-alist :foo 123 :bar 456)"
   (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (-partition 2 kvs)))
 
-;; XXX shouldn't this fn use the top of the top level collection to
-;; create children? that is, shouldn't (a-assoc-in (make-hash-table)
-;; ...) produce nested hash tables?
+(defalias 'a-list 'a-alist)
+
 (defun a-assoc-in (coll keys value)
-  "Associates a value in a nested associative structure, where KEYS is a sequence of keys and V is the new value and returns a new nested structure. If any levels do not exist, association lists will be created."
+  "Associates a value in a nested associative collection COLL, where KEYS is a sequence of keys and VALUE is the new value and returns a new nested structure.
+If any levels do not exist, association lists will be created."
   (case (length keys)
     (0 coll)
     (1 (a-assoc-1 coll (elt keys 0) value))
     (t (a-assoc-1 coll
-                (elt keys 0)
-                (a-assoc-in (a-get coll (elt keys 0))
-                            (seq-drop keys 1)
-                            value)))))
+                  (elt keys 0)
+                  (a-assoc-in (a-get coll (elt keys 0))
+                              (seq-drop keys 1)
+                              value)))))
 
-;; TODO a-dissoc-in 
+;; TODO a-dissoc-in
 
 (defun a-update (coll key fn &rest args)
-  "'Updates' a value in an associative structure, where key is a key and fn is a function that will take the old value and any supplied args and return the new value, and returns a new structure.  If the key does not exist, nil is passed as the old value."
+  "'Updates' a value in an associative collection COLL, where KEY is a key and FN is a function that will take the old value and any supplied args and return the new value, and returns a new structure.
+If the key does not exist, nil is passed as the old value."
   (a-assoc-1 coll
              key
              (apply #'funcall fn (a-get coll key) args)))
 
 (defun a-update-in (coll keys fn &rest args)
-  "'Updates' a value in a nested associative structure, where `keys' is a sequence of keys and fn is a function that will take the old value and any supplied args and return the new value, and returns a new nested structure.  If any levels do not exist, association lists will be created."
+  "'Updates' a value in a nested associative collection COLL, where KEYS is a sequence of keys and FN is a function that will take the old value and any supplied ARGS and return the new value, and returns a new nested structure.
+If any levels do not exist, association lists will be created."
   (case (length keys)
     (0 coll)
     (1 (apply #'a-update coll (elt keys 0) fn args))
     (t (a-assoc-1 coll
-                (elt keys 0)
-                (apply #'a-update-in
-                       (a-get coll (elt keys 0))
-                       (seq-drop keys 1)
-                       fn
-                       args)))))
+                  (elt keys 0)
+                  (apply #'a-update-in
+                         (a-get coll (elt keys 0))
+                         (seq-drop keys 1)
+                         fn
+                         args)))))
 
 (provide 'a)
 ;;; a.el ends here
