@@ -24,7 +24,7 @@
 ;;; Code:
 
 (require 'dash)
-
+(eval-when-compile (require 'subr-x))
 
 (defun a-get (map key &optional not-found)
   "Returns the value mapped to key, not-found or nil if key not present."
@@ -96,9 +96,7 @@
     (mapcar #'car coll))
 
    ((hash-table-p coll)
-    (let ((acc nil))
-      (maphash (lambda (k _) (push k acc)) coll)
-      acc))))
+    (hash-table-keys coll))))
 
 (defun a-vals (coll)
   "Return the values in the collection"
@@ -107,9 +105,7 @@
     (mapcar #'cdr coll))
 
    ((hash-table-p coll)
-    (let ((acc nil))
-      (maphash (lambda (_ v) (push v acc)) coll)
-      acc))))
+    (hash-table-values coll))))
 
 (defun a-reduce-kv (fn from coll)
   "Reduce an associative collection, starting with an initial value of FROM. The reducing functions receives the intermediate value, key, and value."
@@ -127,7 +123,7 @@
     (hash-table-count coll))))
 
 (defun a-equal (a b)
-  "Reduce an associative collection, starting with an initial value of FROM. The reducing functions receives the intermediate value, key, and value."
+  "Compare collections a and b for equality. Return true or false."
   (and (eq (a-count a) (a-count b))
        (a-reduce-kv (lambda (bool k v)
                       (and bool (equal v (a-get b k))))
