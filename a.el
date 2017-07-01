@@ -124,7 +124,7 @@
     (length coll))
 
    ((hash-table-p coll)
-    (length (a-keys coll)))))
+    (hash-table-count coll))))
 
 (defun a-equal (a b)
   "Reduce an associative collection, starting with an initial value of FROM. The reducing functions receives the intermediate value, key, and value."
