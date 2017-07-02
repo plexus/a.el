@@ -3,15 +3,17 @@
 ;; Copyright (C) 2017  Arne Brasseur
 
 ;; Author: Arne Brasseur <arne@arnebrasseur.net>
-;; Package-Requires: ((dash "") (emacs "25"))
+;; URL: https://github.com/plexus/a.el
+;; Keywords: lisp
+;; Version: 1
+;; Package-Requires: ((dash "2.12.0") (emacs "25"))
 
 ;; This program is free software; you can redistribute it and/or modify it under
 ;; the terms of the Mozilla Public License Version 2.0
 
 ;; This program is distributed in the hope that it will be useful, but WITHOUT
 ;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-;; FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-;; details.
+;; FOR A PARTICULAR PURPOSE. See the Mozilla Public License for more details.
 
 ;; You should have received a copy of the Mozilla Public License along with this
 ;; program. If not, see <https://www.mozilla.org/media/MPL/2.0/index.txt>.
@@ -30,7 +32,7 @@
 ;; https://github.com/Wilfred/ht.el/blob/master/ht.el
 
 (defun a-get (map key &optional not-found)
-  "Returns the value mapped to key, not-found or nil if key not present."
+  "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
   (cond
    ((listp map)         (alist-get key map not-found))
    ((vectorp map)       (if (a-has-key? map key)
@@ -40,7 +42,9 @@
    (t (user-error "Not associative: %S" map))))
 
 (defun a-get-in (m ks &optional not-found)
-  "Returns the value in a nested associative structure, where ks is a sequence of keys. Returns nil if the key is not present, or the not-found value if supplied."
+  "Return the value in a nested associative structure, where KS
+is a sequence of keys. Return nil if the key is not present, or
+the NOT-FOUND value if supplied."
   (let ((result m))
     (cl-block nil
       (seq-doseq (k ks)
@@ -50,7 +54,8 @@
       result)))
 
 (defun a-has-key? (coll k)
-  "Checks if the given associative collection contains a certain key. Like Clojure's `contains?', but more aptly named."
+  "Check if the given associative collection COLL contains a
+certain key K. Like Clojure's `contains?', but more aptly named."
   (cond
    ((listp coll)         (not (eq (alist-get k coll :not-found) :not-found)))
    ((vectorp coll)       (and (integerp k) (< -1 k (length coll))))
@@ -87,7 +92,7 @@
           (vconcat coll (-repeat (- k (length coll)) nil) (list v)))))))
 
 (defun a-assoc (coll &rest kvs)
-  "Return an updated collection, associating values with keys."
+  "Return an updated collection COLL, associating values with keys KVS."
   (when (not (evenp (a-count kvs)))
     (user-error "a-assoc requires an even number of arguments!"))
   (-reduce-from (lambda (coll kv)
@@ -96,7 +101,7 @@
                 coll (-partition 2 kvs)))
 
 (defun a-keys (coll)
-  "Return the keys in the collection"
+  "Return the keys in the collection COLL."
   (cond
    ((listp coll)
     (mapcar #'car coll))
@@ -105,7 +110,7 @@
     (hash-table-keys coll))))
 
 (defun a-vals (coll)
-  "Return the values in the collection"
+  "Return the values in the collection COLL."
   (cond
    ((listp coll)
     (mapcar #'cdr coll))
@@ -114,7 +119,9 @@
     (hash-table-values coll))))
 
 (defun a-reduce-kv (fn from coll)
-  "Reduce an associative collection, starting with an initial value of FROM. The reducing functions receives the intermediate value, key, and value."
+  "Reduce an associative collection, starting with an initial
+value of FROM. The reducing functions receives the intermediate
+value, key, and value."
   (-reduce-from (lambda (acc key)
                   (funcall fn acc key (a-get coll key)))
                 from (a-keys coll)))
@@ -139,7 +146,8 @@
                     a)))
 
 (defun a-merge (&rest colls)
-  "Merge multiple associative collections. Returns the type of the first collection."
+  "Merge multiple associative collections.
+Return the type of the first collection COLLS."
   (-reduce (lambda (this that)
              (a-reduce-kv (lambda (coll k v)
                             (a-assoc coll k v))
@@ -150,14 +158,15 @@
 ;; TODO a-merge-with 
 
 (defun a-alist (&rest kvs)
-  "Create an association list from the given keys and values, provided as a single list of arguments. e.g. (a-alist :foo 123 :bar 456)"
+  "Create an association list from the given keys and values KVS, provided as a single list of arguments.  e.g.  (a-alist :foo
+123 :bar 456)"
   (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (-partition 2 kvs)))
 
 ;; XXX shouldn't this fn use the top of the top level collection to
 ;; create children? that is, shouldn't (a-assoc-in (make-hash-table)
 ;; ...) produce nested hash tables?
 (defun a-assoc-in (coll keys value)
-  "Associates a value in a nested associative structure, where ks is a sequence of keys and v is the new value and returns a new nested structure. If any levels do not exist, association lists will be created."
+  "Associates a value in a nested associative structure, where KEYS is a sequence of keys and V is the new value and returns a new nested structure. If any levels do not exist, association lists will be created."
   (case (length keys)
     (0 coll)
     (1 (a-assoc-1 coll (elt keys 0) value))
