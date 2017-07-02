@@ -28,8 +28,6 @@
 (eval-when-compile (require 'subr-x))
 
 (require 'dash)
-;; if you're going to use dash, you might also want ht:
-;; https://github.com/Wilfred/ht.el/blob/master/ht.el
 
 (defun a-get (map key &optional not-found)
   "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
@@ -52,7 +50,7 @@
       result)))
 
 (defun a-has-key? (coll k)
-  "Check if the given associative collection COLL contains a certain key K. Like Clojure's `contains?', but more aptly named."
+  "Check if the given associative collection COLL has a certain key K."
   (cond
    ((listp coll)         (not (eq (alist-get k coll :not-found) :not-found)))
    ((vectorp coll)       (and (integerp k) (< -1 k (length coll))))
@@ -62,7 +60,8 @@
 (defalias 'a-has-key 'a-has-key?)
 
 (defun a-assoc-1 (coll k v)
-  "Like a-assoc, (associate K with V in COLL) but only takes a single k-v pair. Internal helper function."
+  "Like `a-assoc', (in COLL assoc K with V) but only takes a single k-v pair.
+Internal helper function."
   (cond
    ((listp coll)
     (if (a-has-key? coll k)
@@ -114,13 +113,17 @@
     (hash-table-values coll))))
 
 (defun a-reduce-kv (fn from coll)
-  "Reduce an associative collection COLL, starting with an initial value of FROM. The reducing function FN receives the intermediate value, key, and value."
+  "Reduce with FN starting from FROM the collection COLL.
+Reduce an associative collection COLL, starting with an initial
+value of FROM. The reducing function FN receives the intermediate
+value, key, and value."
   (-reduce-from (lambda (acc key)
                   (funcall fn acc key (a-get coll key)))
                 from (a-keys coll)))
 
 (defun a-count (coll)
-  "Count the number of key-value pairs in COLL. Like length, but can also return the length of hash tables."
+  "Count the number of key-value pairs in COLL.
+Like length, but can also return the length of hash tables."
   (cond
    ((seqp coll)
     (length coll))
@@ -131,7 +134,10 @@
 ;; TODO: add a-eql which also checks type equality
 ;; TODO: terminate early
 (defun a-equal (a b)
-  "Compare collections A and B for value equality. Return true if both collections have the same set of key-value pairs, or false otherwise. Association lists and hash tables with the same contents are considered equal."
+  "Compare collections A and B for value equality.
+Return true if both collections have the same set of key-value
+pairs, or false otherwise. Association lists and hash tables with
+the same contents are considered equal."
   (and (eq (a-count a) (a-count b))
        (a-reduce-kv (lambda (bool k v)
                       (and bool (equal v (a-get b k))))
@@ -153,15 +159,19 @@ Return the type of the first collection COLLS."
 ;; TODO a-merge-with
 
 (defun a-alist (&rest kvs)
-  "Create an association list from the given keys and values KVS, provided as a single list of arguments.
+  "Create an association list from the given keys and values KVS.
+Arguments are simply provided in sequence, rather than as lists or cons cells.
 For example: (a-alist :foo 123 :bar 456)"
   (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (-partition 2 kvs)))
 
 (defalias 'a-list 'a-alist)
 
 (defun a-assoc-in (coll keys value)
-  "Associates a value in a nested associative collection COLL, where KEYS is a sequence of keys and VALUE is the new value and returns a new nested structure.
-If any levels do not exist, association lists will be created."
+  "In collection COLL, at location KEYS, associate value VALUE.
+Associates a value in a nested associative collection COLL, where
+KEYS is a sequence of keys and VALUE is the new value and returns
+a new nested structure. If any levels do not exist, association
+lists will be created."
   (case (length keys)
     (0 coll)
     (1 (a-assoc-1 coll (elt keys 0) value))
@@ -174,15 +184,23 @@ If any levels do not exist, association lists will be created."
 ;; TODO a-dissoc-in
 
 (defun a-update (coll key fn &rest args)
-  "'Updates' a value in an associative collection COLL, where KEY is a key and FN is a function that will take the old value and any supplied args and return the new value, and returns a new structure.
-If the key does not exist, nil is passed as the old value."
+  "In collection COLL, at location KEY, apply FN with extra args ARGS.
+'Updates' a value in an associative collection COLL, where KEY is
+a key and FN is a function that will take the old value and any
+supplied args and return the new value, and returns a new
+structure. If the key does not exist, nil is passed as the old
+value."
   (a-assoc-1 coll
              key
              (apply #'funcall fn (a-get coll key) args)))
 
 (defun a-update-in (coll keys fn &rest args)
-  "'Updates' a value in a nested associative collection COLL, where KEYS is a sequence of keys and FN is a function that will take the old value and any supplied ARGS and return the new value, and returns a new nested structure.
-If any levels do not exist, association lists will be created."
+  "In collection COLL, at location KEYS, apply FN with extra args ARGS.
+'Updates' a value in a nested associative collection COLL, where
+KEYS is a sequence of keys and FN is a function that will take
+the old value and any supplied ARGS and return the new value, and
+returns a new nested structure. If any levels do not exist,
+association lists will be created."
   (case (length keys)
     (0 coll)
     (1 (apply #'a-update coll (elt keys 0) fn args))
