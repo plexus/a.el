@@ -32,6 +32,7 @@
   (should (equal (a-get [1 2 3] 1) 2))
   (should (equal (a-get [1 2 3] 5) nil))
   (should (equal (a-get [1 2 3] 5 :fallback) :fallback))
+  (should-error (a-get 5 :nope))
 
   (let ((hash (make-hash-table :test #'equal)))
     (puthash :foo 123 hash)
@@ -51,6 +52,7 @@
   (should (not (a-has-key? [1 2 3] 3)))
   (should (not (a-has-key? [1 2 3] -1)))
   (should (not (a-has-key? [1 2 3] :foo)))
+  (should-error (a-has-key? 1 :nope))
 
   (should (a-has-key? '((:a . 5)) :a))
   (should (not (a-has-key? '((:a . 5)) :b)))
@@ -69,6 +71,7 @@
 
   (should (equal (a-assoc [1 2 3] 1 :foo) [1 :foo 3]))
   (should (equal (a-assoc [1 2 3] 5 :foo) [1 2 3 nil nil :foo]))
+  (should-error (a-assoc '() :foo))
 
   (let ((hash (make-hash-table :test #'equal)))
     (puthash :foo 123 hash)
