@@ -25,8 +25,11 @@
 
 ;;; Code:
 
-(require 'dash)
+(eval-when-compile (require 'subr-x))
 
+(require 'dash)
+;; if you're going to use dash, you might also want ht:
+;; https://github.com/Wilfred/ht.el/blob/master/ht.el
 
 (defun a-get (map key &optional not-found)
   "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
@@ -79,6 +82,7 @@ certain key K. Like Clojure's `contains?', but more aptly named."
               copy)
           (vconcat coll (-repeat (- k (length coll)) nil) (list v)))))
 
+   ;; XXX vectorp duplicated? placeholder for hash-table, maybe?
    ((vectorp coll)
     (if (and (integerp k) (> k 0))
         (if (< k (length coll))
@@ -89,6 +93,8 @@ certain key K. Like Clojure's `contains?', but more aptly named."
 
 (defun a-assoc (coll &rest kvs)
   "Return an updated collection COLL, associating values with keys KVS."
+  (when (not (evenp (a-count kvs)))
+    (user-error "a-assoc requires an even number of arguments!"))
   (-reduce-from (lambda (coll kv)
                   (seq-let [k v] kv
                     (a-assoc-1 coll k v)))
@@ -101,9 +107,7 @@ certain key K. Like Clojure's `contains?', but more aptly named."
     (mapcar #'car coll))
 
    ((hash-table-p coll)
-    (let ((acc nil))
-      (maphash (lambda (k _) (push k acc)) coll)
-      acc))))
+    (hash-table-keys coll))))
 
 (defun a-vals (coll)
   "Return the values in the collection COLL."
@@ -112,9 +116,7 @@ certain key K. Like Clojure's `contains?', but more aptly named."
     (mapcar #'cdr coll))
 
    ((hash-table-p coll)
-    (let ((acc nil))
-      (maphash (lambda (_ v) (push v acc)) coll)
-      acc))))
+    (hash-table-values coll))))
 
 (defun a-reduce-kv (fn from coll)
   "Reduce an associative collection, starting with an initial
@@ -131,10 +133,12 @@ value, key, and value."
     (length coll))
 
    ((hash-table-p coll)
-    (length (a-keys coll)))))
+    (hash-table-count coll))))
 
+;; 1) is it ok that collections of different types can be equal?
+;; 2) early termination would be nice for larger collections
 (defun a-equal (a b)
-  "Reduce an associative collection, starting with an initial value of FROM. The reducing functions receives the intermediate value, key, and value."
+  "Compare collections a and b for equality. Return true or false."
   (and (eq (a-count a) (a-count b))
        (a-reduce-kv (lambda (bool k v)
                       (and bool (equal v (a-get b k))))
@@ -151,11 +155,16 @@ Return the type of the first collection COLLS."
                           that))
            colls))
 
+;; TODO a-merge-with 
+
 (defun a-alist (&rest kvs)
   "Create an association list from the given keys and values KVS, provided as a single list of arguments.  e.g.  (a-alist :foo
 123 :bar 456)"
   (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (-partition 2 kvs)))
 
+;; XXX shouldn't this fn use the top of the top level collection to
+;; create children? that is, shouldn't (a-assoc-in (make-hash-table)
+;; ...) produce nested hash tables?
 (defun a-assoc-in (coll keys value)
   "Associates a value in a nested associative structure, where KEYS is a sequence of keys and V is the new value and returns a new nested structure. If any levels do not exist, association lists will be created."
   (case (length keys)
@@ -166,6 +175,8 @@ Return the type of the first collection COLLS."
                 (a-assoc-in (a-get coll (elt keys 0))
                             (seq-drop keys 1)
                             value)))))
+
+;; TODO a-dissoc-in 
 
 (defun a-update (coll key fn &rest args)
   "'Updates' a value in an associative structure, where key is a key and fn is a function that will take the old value and any supplied args and return the new value, and returns a new structure.  If the key does not exist, nil is passed as the old value."
