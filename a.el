@@ -166,6 +166,21 @@ For example: (a-alist :foo 123 :bar 456)"
 
 (defalias 'a-list 'a-alist)
 
+(defun a-hash-table (&rest kvs)
+  "Create a hash table from the given keys and values KVS.
+Arguments are simply provided in sequence, rather than as lists
+or cons cells. As \"test\" for the hash table, equal is used. The
+hash table is created without extra storage space, so with a size
+equal to amount of key-value pairs, since it is assumed to be
+treated as immutable.
+For example: (a-hash-table :foo 123 :bar 456)"
+  (let* ((kv-pairs (seq-partition kvs 2))
+         (hash-map (make-hash-table :test 'equal :size (length kv-pairs))))
+    (seq-do (lambda (pair)
+              (puthash (car pair) (cadr pair) hash-map))
+            kv-pairs)
+    hash-map))
+
 (defun a-assoc-in (coll keys value)
   "In collection COLL, at location KEYS, associate value VALUE.
 Associates a value in a nested associative collection COLL, where
