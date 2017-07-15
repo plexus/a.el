@@ -6,7 +6,7 @@
 ;; URL: https://github.com/plexus/a.el
 ;; Keywords: lisp
 ;; Version: 0.1.0-alpha2
-;; Package-Requires: ((dash "2.12.0") (emacs "25"))
+;; Package-Requires: ((emacs "25"))
 
 ;; This program is free software; you can redistribute it and/or modify it under
 ;; the terms of the Mozilla Public License Version 2.0
@@ -32,7 +32,6 @@
 
 (eval-when-compile (require 'subr-x)) ;; for things like hash-table-keys
 
-(require 'dash)
 (require 'cl-lib)
 
 (defun a-get (map key &optional not-found)
@@ -89,7 +88,7 @@ Internal helper function."
             (let ((copy (copy-sequence coll)))
               (aset copy k v)
               copy)
-          (vconcat coll (-repeat (- k (length coll)) nil) (list v)))))
+          (vconcat coll (make-list (- k (length coll)) nil) (list v)))))
 
    ((hash-table-p coll)
     (let ((copy (copy-hash-table coll)))
@@ -100,10 +99,11 @@ Internal helper function."
   "Return an updated collection COLL, associating values with keys KVS."
   (when (not (cl-evenp (a-count kvs)))
     (user-error "a-assoc requires an even number of arguments!"))
-  (-reduce-from (lambda (coll kv)
+  (seq-reduce (lambda (coll kv)
                   (seq-let [k v] kv
                     (a-assoc-1 coll k v)))
-                coll (-partition 2 kvs)))
+              (seq-partition kvs 2)
+              coll))
 
 (defun a-keys (coll)
   "Return the keys in the collection COLL."
@@ -128,9 +128,10 @@ Internal helper function."
 Reduce an associative collection COLL, starting with an initial
 value of FROM. The reducing function FN receives the intermediate
 value, key, and value."
-  (-reduce-from (lambda (acc key)
+  (seq-reduce (lambda (acc key)
                   (funcall fn acc key (a-get coll key)))
-                from (a-keys coll)))
+              (a-keys coll)
+              from))
 
 (defun a-count (coll)
   "Count the number of key-value pairs in COLL.
@@ -143,37 +144,51 @@ Like length, but can also return the length of hash tables."
     (hash-table-count coll))))
 
 ;; TODO: add a-eql which also checks type equality
-;; TODO: terminate early
+;; TODO: should this work recursively?
 (defun a-equal (a b)
   "Compare collections A and B for value equality.
 Return true if both collections have the same set of key-value
 pairs, or false otherwise. Association lists and hash tables with
 the same contents are considered equal."
-  (and (eq (a-count a) (a-count b))
-       (a-reduce-kv (lambda (bool k v)
-                      (and bool (equal v (a-get b k))))
-                    t
-                    a)))
+  (when (eq (a-count a) (a-count b))
+    (cl-block nil
+      (seq-doseq (k (a-keys a))
+        (when (not (equal (a-get a k) (a-get b k)))
+          (cl-return nil)))
+      t)))
 
 (defalias 'a-equal? 'a-equal)
 
 (defun a-merge (&rest colls)
   "Merge multiple associative collections.
 Return the type of the first collection COLLS."
-  (-reduce (lambda (this that)
-             (a-reduce-kv (lambda (coll k v)
-                            (a-assoc coll k v))
-                          this
-                          that))
-           colls))
+  (seq-reduce (lambda (this that)
+                (a-reduce-kv (lambda (coll k v)
+                               (a-assoc coll k v))
+                             this
+                             that))
+              (cdr colls)
+              (car colls)))
 
-;; TODO a-merge-with
+(defun a-merge-with (f &rest colls)
+  "Merge multiple associative collections.
+Return the type of the first collection COLLS. If a key exists in
+both, then combine the associated values by calling f on them."
+  (seq-reduce (lambda (this that)
+                (a-reduce-kv (lambda (coll k v)
+                               (a-assoc coll k (if (a-has-key coll k)
+                                                   (funcall f v (a-get coll k))
+                                                 v)))
+                             this
+                             that))
+              (cdr colls)
+              (car colls)))
 
 (defun a-alist (&rest kvs)
   "Create an association list from the given keys and values KVS.
 Arguments are simply provided in sequence, rather than as lists or cons cells.
 For example: (a-alist :foo 123 :bar 456)"
-  (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (-partition 2 kvs)))
+  (mapcar (lambda (kv) (cons (car kv) (cadr kv))) (seq-partition kvs 2)))
 
 (defalias 'a-list 'a-alist)
 
@@ -207,6 +222,7 @@ lists will be created."
                               (seq-drop keys 1)
                               value)))))
 
+;; TODO a-dissoc
 ;; TODO a-dissoc-in
 
 (defun a-update (coll key fn &rest args)

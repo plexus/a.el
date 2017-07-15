@@ -150,6 +150,10 @@
      '((:c . 3) (:b . 5)))
     '((:a . 1) (:b . 5) (:c . 3)))))
 
+(ert-deftest a-merge-with-test ()
+  (should (a-equal (a-merge-with '+ (a-list :x 5 :y 3) (a-list :x 7 :z 6))
+                   (a-list :z 6 :x 12 :y 3))))
+
 (ert-deftest a-alist ()
   (should
    (a-equal
