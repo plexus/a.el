@@ -144,7 +144,7 @@ the same contents are considered equal."
                     t
                     a)))
 
-(defalias 'a-equal 'a-equal?)
+(defalias 'a-equal? 'a-equal)
 
 (defun a-merge (&rest colls)
   "Merge multiple associative collections.
