@@ -5,7 +5,7 @@
 ;; Author: Arne Brasseur <arne@arnebrasseur.net>
 ;; URL: https://github.com/plexus/a.el
 ;; Keywords: lisp
-;; Version: 0.1.0
+;; Version: 0.1.0-alpha2
 ;; Package-Requires: ((dash "2.12.0") (emacs "25"))
 
 ;; This program is free software; you can redistribute it and/or modify it under
@@ -30,9 +30,10 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'subr-x))
+(eval-when-compile (require 'subr-x)) ;; for things like hash-table-keys
 
 (require 'dash)
+(require 'cl-lib)
 
 (defun a-get (map key &optional not-found)
   "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
@@ -97,7 +98,7 @@ Internal helper function."
 
 (defun a-assoc (coll &rest kvs)
   "Return an updated collection COLL, associating values with keys KVS."
-  (when (not (evenp (a-count kvs)))
+  (when (not (cl-evenp (a-count kvs)))
     (user-error "a-assoc requires an even number of arguments!"))
   (-reduce-from (lambda (coll kv)
                   (seq-let [k v] kv
