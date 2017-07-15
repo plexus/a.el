@@ -1,4 +1,4 @@
-;;; a.el --- Associative function              -*- lexical-binding: t; -*-
+;;; a.el --- Associative data structure functions   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017  Arne Brasseur
 
@@ -21,7 +21,12 @@
 ;;; Commentary:
 
 ;; Library for dealing with associative data structures: alists, hash-maps, and
-;; vectors (for vectors, the indices are treated as keys)
+;; vectors (for vectors, the indices are treated as keys).
+;;
+;; This library is largely inspired by Clojure, it has many of the functions
+;; found in clojure.core, prefixed with `a-'. All functions treat their
+;; arguments as immutable, so e.g. `a-assoc' will clone the hash-table or alist
+;; it is given. Keep this in mind when writing performance sensitive code.
 
 ;;; Code:
 
@@ -40,7 +45,12 @@
    (t (user-error "Not associative: %S" map))))
 
 (defun a-get-in (m ks &optional not-found)
-  "Return the value in a nested associative structure M, where KS is a sequence of keys. Return nil if the key is not present, or the NOT-FOUND value if supplied."
+  "Look up a value in a nested associative structure.
+
+Given a data structure M, and a sequence of keys KS, find the
+value found by using each key in turn to do a lookup in the next
+\"layer\". Return `nil' if the key is not present, or the NOT-FOUND
+value if supplied."
   (let ((result m))
     (cl-block nil
       (seq-doseq (k ks)
