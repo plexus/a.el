@@ -5,7 +5,7 @@
 ;; Author: Arne Brasseur <arne@arnebrasseur.net>
 ;; URL: https://github.com/plexus/a.el
 ;; Keywords: lisp
-;; Version: 1
+;; Version: 0.1.0
 ;; Package-Requires: ((dash "2.12.0") (emacs "25"))
 
 ;; This program is free software; you can redistribute it and/or modify it under
