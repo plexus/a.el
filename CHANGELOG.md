@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file. This change
 - `a-equal` terminates early
 - Removed dash dependency
 
-## [0.1.0alpha2] - 2017-07-16
+## [0.1.0alpha2] - 2017-07-15
 Initial release
 
 [Unreleased]: https://github.com/plexus/a.el/compare/v0.1.0alpha3...HEAD
