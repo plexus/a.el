@@ -33,6 +33,7 @@
 (eval-when-compile (require 'subr-x)) ;; for things like hash-table-keys
 
 (require 'cl-lib)
+(require 'seq)
 
 (defun a-associative-p (obj)
   (or (not obj)
@@ -237,7 +238,7 @@ Associates a value in a nested associative collection COLL, where
 KEYS is a sequence of keys and VALUE is the new value and returns
 a new nested structure. If any levels do not exist, association
 lists will be created."
-  (case (length keys)
+  (cl-case (length keys)
     (0 coll)
     (1 (a-assoc-1 coll (elt keys 0) value))
     (t (a-assoc-1 coll
@@ -292,7 +293,7 @@ KEYS is a sequence of keys and FN is a function that will take
 the old value and any supplied ARGS and return the new value, and
 returns a new nested structure. If any levels do not exist,
 association lists will be created."
-  (case (length keys)
+  (cl-case (length keys)
     (0 coll)
     (1 (apply #'a-update coll (elt keys 0) fn args))
     (t (a-assoc-1 coll

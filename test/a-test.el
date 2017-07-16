@@ -1,4 +1,4 @@
-;;; a-test.el --- Associative function              -*- lexical-binding: t; -*-
+;;; a-test.el --- Associative data structure functions: tests              -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017  Arne Brasseur
 
@@ -17,8 +17,7 @@
 
 ;;; Commentary:
 
-;; Library for dealing with associative data structures: alists, hash-maps, and
-;; vectors (for vectors, the indices are treated as keys)
+;; Test suite for a.el
 
 ;;; Code:
 
@@ -205,5 +204,4 @@
                  #'concat "y")
     '((:foo (:bar . [1 2 "xy"]))))))
 
-(provide 'a-test)
 ;;; a-test.el ends here
