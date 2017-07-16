@@ -1,0 +1,28 @@
+# Change Log
+All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
+
+## [Unreleased]
+(this space intentionally left blank)
+
+<!-- ### Added -->
+<!-- ### Changed -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+
+## [0.1.0alpha3] - 2017-07-16
+### Added
+- `a-dissoc` Remove a key from a collection
+- `a-associative?` / `a-associative-p` Returns true for association lists and hash tables
+- `a-merge-with` Merge, resolving conflicts with a given function
+
+### Changed
+- `a-equal` now works on any value, and does a deep comparison
+- `a-equal` terminates early
+- Removed dash dependency
+
+## [0.1.0alpha2] - 2017-07-16
+Initial release
+
+[Unreleased]: https://github.com/plexus/a.el/compare/v0.1.0alpha3...HEAD
+[0.1.0alpha3]: https://github.com/plexus/a.el/compare/v0.1.0alpha2...v0.1.0alpha3
+[0.1.0alpha2]: https://github.com/plexus/a.el/compare/6760b4edb7cf...v0.1.0alpha2

@@ -5,7 +5,7 @@
 ;; Author: Arne Brasseur <arne@arnebrasseur.net>
 ;; URL: https://github.com/plexus/a.el
 ;; Keywords: lisp
-;; Version: 0.1.0-alpha2
+;; Version: 0.1.0alpha3
 ;; Package-Requires: ((emacs "25"))
 
 ;; This program is free software; you can redistribute it and/or modify it under
@@ -34,6 +34,13 @@
 
 (require 'cl-lib)
 
+(defun a-associative-p (obj)
+  (or (not obj)
+      (hash-table-p obj)
+      (and (consp obj) (consp (car obj)))))
+
+(defalias 'a-associative? 'a-associative-p)
+
 (defun a-get (map key &optional not-found)
   "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
   (cond
@@ -59,7 +66,7 @@ value if supplied."
           (cl-return not-found)))
       result)))
 
-(defun a-has-key? (coll k)
+(defun a-has-key (coll k)
   "Check if the given associative collection COLL has a certain key K."
   (cond
    ((listp coll)         (not (eq (alist-get k coll :not-found) :not-found)))
@@ -67,7 +74,7 @@ value if supplied."
    ((hash-table-p coll)  (not (eq (gethash k coll :not-found) :not-found)))
    (t (user-error "Not associative: %S" coll))))
 
-(defalias 'a-has-key 'a-has-key?)
+(defalias 'a-has-key? 'a-has-key)
 
 (defun a-assoc-1 (coll k v)
   "Like `a-assoc', (in COLL assoc K with V) but only takes a single k-v pair.
@@ -143,19 +150,36 @@ Like length, but can also return the length of hash tables."
    ((hash-table-p coll)
     (hash-table-count coll))))
 
-;; TODO: add a-eql which also checks type equality
-;; TODO: should this work recursively?
 (defun a-equal (a b)
-  "Compare collections A and B for value equality.
-Return true if both collections have the same set of key-value
-pairs, or false otherwise. Association lists and hash tables with
-the same contents are considered equal."
-  (when (eq (a-count a) (a-count b))
-    (cl-block nil
-      (seq-doseq (k (a-keys a))
-        (when (not (equal (a-get a k) (a-get b k)))
-          (cl-return nil)))
-      t)))
+  "Compare collections A, B for value equality.
+
+Associative collections (hash tables and a-lists) are considered
+equal if they contain equal key-value pairs, regardless of order.
+
+Sequences (lists or vectors) are considered equal if they contain
+the same elements in the same order.
+
+Collection elements are compared using `a-equal'. In other words,
+the equality check is recursive, resulting in a \"deep\" equality
+check.
+
+Anything that isn't associative or a sequence is compared with
+`equal'."
+  (cond
+   ((and (a-associative? a) (a-associative? b))
+    (when (eq (a-count a) (a-count b))
+      (cl-block nil
+        (seq-doseq (k (a-keys a))
+          (when (not (a-equal (a-get a k) (a-get b k)))
+            (cl-return nil)))
+        t)))
+   ((and (sequencep a) (sequencep b))
+    (and (eq (length a) (length b))
+         (or (and (seq-empty-p a) (seq-empty-p b))
+             (and (a-equal (elt a 0) (elt b 0))
+                  (a-equal (seq-drop a 1) (seq-drop b 1))))))
+   (t
+    (equal a b))))
 
 (defalias 'a-equal? 'a-equal)
 
@@ -222,8 +246,33 @@ lists will be created."
                               (seq-drop keys 1)
                               value)))))
 
-;; TODO a-dissoc
-;; TODO a-dissoc-in
+(defun a-dissoc--list (list keys)
+  "Return updated LIST with KEYS removed.
+Internal helper. Use `a-dissoc' instead."
+  (a-reduce-kv (lambda (res k v)
+                 (if (member k keys)
+                     res
+                   (cons (cons k v) res)))
+               nil
+               list))
+
+(defun a-dissoc--hash-table (table keys)
+  "Return updated TABLE with KEYS removed.
+Internal helper. Use `a-dissoc' instead."
+  (let ((new-table (make-hash-table :size (hash-table-count table)
+                                    :test (hash-table-test table)))
+        (rest-keys (seq-remove (lambda (k)
+                                 (member k keys))
+                               (a-keys table))))
+    (seq-doseq (k rest-keys)
+      (puthash k (gethash k table) new-table))
+    new-table))
+
+(defun a-dissoc (coll &rest keys)
+  "Return an updated version of collection COLL with the KEY removed."
+  (cond
+   ((listp coll) (a-dissoc--list coll keys))
+   ((hash-table-p coll) (a-dissoc--hash-table coll keys))))
 
 (defun a-update (coll key fn &rest args)
   "In collection COLL, at location KEY, apply FN with extra args ARGS.

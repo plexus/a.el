@@ -25,6 +25,13 @@
 (require 'a)
 (require 'ert)
 
+(ert-deftest a-associative?-test ()
+  (should (a-associative? nil))
+  (should (a-associative? (a-list)))
+  (should (a-associative? (a-list :foo 1)))
+  (should (a-associative? (a-hash-table :foo 1)))
+  (should (not (a-associative? '(1 2 3)))))
+
 (ert-deftest a-get-test ()
   (should (equal (a-get '((:foo . 5)) :foo) 5))
   (should (equal (a-get '((:foo . 5)) :bar) nil))
@@ -126,7 +133,14 @@
     (puthash :bar 456 hash)
     (should (a-equal hash '((:foo . 123) (:bar . 456)))))
 
-  (should (a-equal '((:a . 1) (:b . 2)) '((:b . 2) (:a . 1)))))
+  (should (a-equal '((:a . 1) (:b . 2)) '((:b . 2) (:a . 1))))
+
+  (should (a-equal 1 1))
+  (should (a-equal '(1 2 3) [1 2 3]))
+  (should (not (a-equal '(1 2 3 4) [1 2 3])))
+  (should (not (a-equal '(1 2 3) [1 2 3 4])))
+  (should (a-equal (a-list :foo (a-hash-table :bar [1 2] :baz nil))
+                   (a-hash-table :foo (a-list :bar '(1 2) :baz nil)))))
 
 (ert-deftest a-merge-test ()
   (should
@@ -171,6 +185,17 @@
    (equal
     (a-assoc-in (a-alist :foo nil) [:foo :bar 2] 5)
     '((:foo . ((:bar . ((2 . 5)))))))))
+
+(ert-deftest a-dissoc-test ()
+  (should (a-equal
+           (a-dissoc (a-list :foo 1 :baz 2 :baq 3) :baz)
+           (a-list :foo 1 :baq 3)))
+  (should (a-equal
+           (a-dissoc (a-list :foo 1 :baz 2 :baq 3) :baq :foo)
+           (a-list :baz 2)))
+  (should (a-equal
+           (a-dissoc (a-hash-table :foo 1 :baz 2 :baq 3) :baq)
+           (a-hash-table  :foo 1 :baz 2))))
 
 (ert-deftest a-update-in-test ()
   (should
