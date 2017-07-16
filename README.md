@@ -4,7 +4,21 @@ Emacs Lisp functions for dealing with associative structures in a uniform and fu
 
 Inspired by Clojure, dash, and seq.el.
 
-These functions can take association lists, hash tables, or vectors (where the index is considered the key).
+These functions can take association lists, hash tables, and in some cases vectors (where the index is considered the key).
+
+## Requirements
+
+a.el relies on features that are part of Emacs 25, so you need Emacs 25 or later. There are no other dependencies.
+
+## Installation
+
+a.el is available from Lambda Island ELPA. Add this to your `~/.emacs` or `~/.emacs.d/init.el`
+
+``` emacs-lisp
+(require 'package)
+(add-to-list 'package-archives
+             '("lambdaisland" . "http://lambdaisland.github.io/elpa/") t)
+```
 
 ## Functions
 
@@ -13,10 +27,12 @@ These functions can take association lists, hash tables, or vectors (where the i
 ;;=> ((:foo . 5) (:bar . 6))
 
 (setq m (a-list :foo 5 :bar 6))
-(setq h (make-hash-table))
+(setq h (a-hash-table :abc 123 :def 456))
 
-(puthash :abc 123 h)
-(puthash :def 456 h)
+(a-associative? m)
+;;=> t
+(a-associative? h)
+;;=> t
 
 (a-get m :foo)
 ;;=> 5
@@ -47,12 +63,18 @@ These functions can take association lists, hash tables, or vectors (where the i
 (a-count h)
 ;;=> 2
 
+(a-dissoc m :foo)
+;;=> ((:bar . 6))
+
 (a-assoc-in (a-list :name "Arne")
             [:stats :score] 100)
 ;;=> ((:name . "Arne") (:stats . ((:score . 100))))
 
 (a-merge m h (a-list :and :more))
 ;;=> ((:and . :more) (:abc . 123) (:def . 456) (:foo . 5) (:bar . 6))
+
+(a-merge-with '+ m (a-list :foo 10))
+;;=> ((:foo . 15) (:bar . 6))
 
 (a-update (a-list :name "Arne") :name 'concat " Brasseur")
 ;;=> ((:name . "Arne Brasseur"))
