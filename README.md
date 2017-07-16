@@ -88,4 +88,4 @@ a.el is available from Lambda Island ELPA. Add this to your `~/.emacs` or `~/.em
 
 &copy; Arne Brasseur 2017
 
-Distributed under the terms of the Mozilla Public License 2.0.
+Distributed under the terms of the GNU General Public License, version 3.0 or later. See LICENSE.
