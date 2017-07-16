@@ -21,7 +21,8 @@ All notable changes to this project will be documented in this file. This change
 - Removed dash dependency
 
 ## [0.1.0alpha2] - 2017-07-15
-Initial release
+### Added
+- `a-hash-table` Hash table constructor, similar to `a-list`
 
 [Unreleased]: https://github.com/plexus/a.el/compare/v0.1.0alpha3...HEAD
 [0.1.0alpha3]: https://github.com/plexus/a.el/compare/v0.1.0alpha2...v0.1.0alpha3
