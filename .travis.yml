@@ -1,7 +1,7 @@
 language: generic
 dist: trusty
 env:
-  - EMACS=emacs25
+  - EMACS=emacs
   - EMACS=emacs-snapshot
 matrix:
   allow_failures:
