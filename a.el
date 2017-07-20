@@ -52,12 +52,29 @@
 (defun a-get (map key &optional not-found)
   "Return the value MAP mapped to KEY, NOT-FOUND or nil if key not present."
   (cond
-   ((listp map)         (alist-get key map not-found))
-   ((vectorp map)       (if (a-has-key? map key)
-                            (aref map key)
-                          not-found))
-   ((hash-table-p map)  (gethash key map not-found))
+   ;; own implementation instead of alist-get so keys are checked with equal
+   ;; instead of eq
+   ((listp map)
+    (a--alist-get map key not-found))
+
+   ((vectorp map)
+    (if (a-has-key? map key)
+        (aref map key)
+      not-found))
+
+   ((hash-table-p map)
+    (gethash key map not-found))
    (t (user-error "Not associative: %S" map))))
+
+(defun a--alist-get (map key &optional not-found)
+  "Like alist-get, but uses equal instead of eq to look up in map MAP key KEY.
+Returns NOT-FOUND if the key is not present, or `nil' if
+NOT-FOUND is not specified."
+  (cl-block nil
+    (seq-doseq (pair map)
+      (when (equal (car pair) key)
+        (cl-return (cdr pair))))
+    not-found))
 
 (defun a-get-in (m ks &optional not-found)
   "Look up a value in a nested associative structure.
@@ -77,7 +94,7 @@ value if supplied."
 (defun a-has-key (coll k)
   "Check if the given associative collection COLL has a certain key K."
   (cond
-   ((listp coll)         (not (eq (alist-get k coll :not-found) :not-found)))
+   ((listp coll)         (not (eq (a--alist-get coll k :not-found) :not-found)))
    ((vectorp coll)       (and (integerp k) (< -1 k (length coll))))
    ((hash-table-p coll)  (not (eq (gethash k coll :not-found) :not-found)))
    (t (user-error "Not associative: %S" coll))))
@@ -175,12 +192,13 @@ Anything that isn't associative or a sequence is compared with
 `equal'."
   (cond
    ((and (a-associative? a) (a-associative? b))
-    (when (eq (a-count a) (a-count b))
-      (cl-block nil
-        (seq-doseq (k (a-keys a))
-          (when (not (a-equal (a-get a k) (a-get b k)))
-            (cl-return nil)))
-        t)))
+    (or (equal a b)
+        (when (eq (a-count a) (a-count b))
+          (cl-block nil
+            (seq-doseq (k (a-keys a))
+              (when (not (a-equal (a-get a k) (a-get b k)))
+                (cl-return nil)))
+            t))))
    ((and (sequencep a) (sequencep b))
     (and (eq (length a) (length b))
          (or (and (seq-empty-p a) (seq-empty-p b))

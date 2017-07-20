@@ -4,10 +4,15 @@ All notable changes to this project will be documented in this file. This change
 ## [Unreleased]
 (this space intentionally left blank)
 
+<!-- ### Changed -->
 <!-- ### Added -->
 <!-- ### Changed -->
 <!-- ### Removed -->
 <!-- ### Fixed -->
+
+## [0.1.0alpha4] - 2017-07-20
+### Fixed
+- Fixed `a-get`, `a-has-key`, and `a-get-in` to correctly work with string keys.
 
 ## [0.1.0alpha3] - 2017-07-16
 ### Added
@@ -25,5 +30,6 @@ All notable changes to this project will be documented in this file. This change
 - `a-hash-table` Hash table constructor, similar to `a-list`
 
 [Unreleased]: https://github.com/plexus/a.el/compare/v0.1.0alpha3...HEAD
+[0.1.0alpha4]: https://github.com/plexus/a.el/compare/v0.1.0alpha3...v0.1.0alpha4
 [0.1.0alpha3]: https://github.com/plexus/a.el/compare/v0.1.0alpha2...v0.1.0alpha3
 [0.1.0alpha2]: https://github.com/plexus/a.el/compare/6760b4edb7cf...v0.1.0alpha2
