@@ -6,6 +6,23 @@ Inspired by Clojure, dash, and seq.el.
 
 These functions can take association lists, hash tables, and in some cases vectors (where the index is considered the key).
 
+This library copies the names and semantics of the Clojure standard library. If you know Clojure then just add `a-` to the function name. The only exceptions are:
+
+- `a-alist` is an association list contructor, it has no Clojure counterpart.
+- `a-has-key?` is the equivalent of Clojure's `contains?`. This historical naming mistake won't be fixed in Clojure, but we can fix it here.
+- predicates have both a `?` and a `-p` version, e.g. `a-has-key-p`. Use the latter if you want greater consistency with existing Elisp code.
+
+All functions in this library are pure, they do not mutate their arguments.
+
+## Alternatives
+
+The one unique selling point for `a.el` is that it lets you reuse your Clojure experience in Emacs, so Clojure programmers can be productive quickly. If you are not experienced in Clojure, or you want to do things "the Emacs way", then consider these alternatives.
+
+- [map.el](https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/map.el) comes bundled with recent Emacs versions
+- [asoc.el](https://github.com/troyp/asoc.el) Association list library
+- [ht.el](https://github.com/Wilfred/ht.el) Hash table library
+- [kv.el](https://github.com/nicferrier/emacs-kv) A collection of tools for dealing with key/value data structures such as plists, alists and hash-tables.
+
 ## Requirements
 
 a.el relies on features that are part of Emacs 25, so you need Emacs 25 or later. There are no other dependencies.
