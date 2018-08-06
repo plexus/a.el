@@ -96,14 +96,14 @@
     (puthash :foo 123 hash)
     (puthash :bar 123 hash)
 
-    (should (equal (a-keys hash) '(:bar :foo)))))
+    (should (equal (sort (a-keys hash) #'string<) '(:bar :foo)))))
 
 (ert-deftest a-vals-test ()
   (should (equal (a-vals '((:a . 1) (:b . 2))) '(1 2)))
   (let ((hash (make-hash-table :test #'equal)))
     (puthash :foo 123 hash)
     (puthash :bar 456 hash)
-    (should (equal (a-vals hash) '(456 123)))))
+    (should (equal (sort (a-vals hash) #'<) '(123 456)))))
 
 (ert-deftest a-reduce-kv ()
   (should (equal
@@ -209,5 +209,17 @@
                  [:foo :bar 2]
                  #'concat "y")
     '((:foo (:bar . [1 2 "xy"]))))))
+
+(ert-deftest a-get*-test ()
+  (let ((alphabets (a-list "Greek" (a-list 1 (a-list 'letter "α"
+                                                     'name "alpha")
+                                           2 (a-list 'letter "β"
+                                                     'name "beta"))
+                           "English" (a-list 1 (a-list 'letter "a"
+                                                       'name "A")
+                                             2 (a-list 'letter "b"
+                                                       'name "B")))))
+    (should (equal (a-get* alphabets "Greek" 1 'letter)
+                   "α"))))
 
 ;;; a-test.el ends here

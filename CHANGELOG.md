@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file. This change
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [0.1.0] - 2018-08-06
+### Added
+
+- Added `a-get*`
+
 ## [0.1.0alpha4] - 2017-07-20
 ### Fixed
 - Fixed `a-get`, `a-has-key`, and `a-get-in` to correctly work with string keys.
