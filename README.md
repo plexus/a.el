@@ -1,3 +1,6 @@
+[![MELPA](https://melpa.org/packages/a-badge.svg)](https://melpa.org/#/a)
+[![MELPA Stable](https://stable.melpa.org/packages/a-badge.svg)](https://stable.melpa.org/#/a)
+
 # a.el
 
 Emacs Lisp functions for dealing with associative structures in a uniform and functional way.
