@@ -81,6 +81,7 @@
                           :foo :bar
                           :baz :baq) '((:baz . :baq) (:foo . :bar))))
 
+  (should (equal (a-assoc [1 2 3] 0 :foo) [:foo 2 3]))
   (should (equal (a-assoc [1 2 3] 1 :foo) [1 :foo 3]))
   (should (equal (a-assoc [1 2 3] 5 :foo) [1 2 3 nil nil :foo]))
   (should-error (a-assoc '() :foo))

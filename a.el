@@ -128,7 +128,7 @@ Internal helper function."
       (cons (cons k v) coll)))
 
    ((vectorp coll)
-    (if (and (integerp k) (> k 0))
+    (if (and (integerp k) (>= k 0))
         (if (< k (length coll))
             (let ((copy (copy-sequence coll)))
               (aset copy k v)
