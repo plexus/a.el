@@ -14,7 +14,7 @@ submitted patches for critical bugs, or to stay compatible with newer versions
 of GNU Emacs, if necessary, to the extent possible without breaking
 compatibility with Emacs 25-28.
 
-If your code works with `a.el` then we'll try to make sure it contains to work!
+If your code works with `a.el` then we'll try to make sure it continues to work!
 
 ## Should you use it for new code?
 
