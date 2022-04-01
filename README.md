@@ -35,7 +35,10 @@ That said not every `clojure.core` has a straightforward equivalent, and so if
 you rely on those then `a.el` may still provide you with value. In particular
 `a.el` implements equality semantics similar to Clojure's, with value semantics
 across associative and sequential data structures. This is something that is not
-trivial to replicate with Emacs built-ins.
+trivial to replicate with Emacs built-ins. That said this doesn't come for free,
+Emacs Lisp's data structures don't retain a cached hashCode the way Clojure's
+persistent data structures do, and so we have to always recursively walk them.
+That may be a high cost if you don't need it.
 
 The main alternative to `a.el` is the
 [map.el](https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/map.el)
