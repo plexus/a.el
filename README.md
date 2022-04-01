@@ -18,6 +18,13 @@ If your code works with `a.el` then we'll try to make sure it contains to work!
 
 ## Should you use it for new code?
 
+tl;dr
+
+- your package can't be included in GNU ELPA if you use a.el
+- a's value semantics can be costly
+- your code will become easier to work on by people coming from Clojure, but harder for experienced elisp devs
+- it's an extra dependency you may not need
+
 `a.el` is not in accordance with [GNU ELPA](https://elpa.gnu.org/)'s naming
 guidelines, meaning it will never be part of GNU ELPA, and can not be used in
 packages that ever wish to be included in GNU ELPA. This is the reason `a.el`
