@@ -5,11 +5,53 @@
 
 Emacs Lisp functions for dealing with associative structures in a uniform and functional way.
 
-**This library is sunsetting, you are advised not to use it on new projects.**
-
 Inspired by Clojure, dash, and seq.el.
 
-These functions can take association lists, hash tables, and in some cases vectors (where the index is considered the key).
+## Project status
+
+This library is stable and is not expected to change. We will still consider
+submitted patches for critical bugs, or to stay compatible with newer versions
+of GNU Emacs, if necessary, to the extent possible without breaking
+compatibility with Emacs 25-28.
+
+If your code works with `a.el` then we'll try to make sure it contains to work!
+
+## Should you use it for new code?
+
+`a.el` is not in accordance with [GNU ELPA](https://elpa.gnu.org/)'s naming
+guidelines, meaning it will never be part of GNU ELPA, and can not be used in
+packages that ever wish to be included in GNU ELPA. This is the reason `a.el`
+usage was removed from CIDER. It *is* available from
+[MELPA](https://github.com/melpa/melpa).
+
+The one unique selling point for `a.el` is that it lets you reuse your Clojure
+experience in Emacs, so Clojure programmers can be productive quickly. If you
+are not experienced in Clojure, or you want to do things "the Emacs way", then
+there are other alternatives. Most functions in `a.el` can be straightforwardly
+replaced with Emacs built-ins, and as such the `a.el` code can be a great cheat
+sheet of how to do things instead. That said not every `clojure.core` has a
+straightforward equivalent, and so if you rely on those then `a.el` may still
+provide you some value.
+
+The main alternative to consider is the
+[map.el](https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/map.el)
+library that nowadays comes bundled with Emacs. You can also use Common Lisp
+style functions (i.e. `cl-*`) through requiring `cl-lib`. This is now even
+allowed in code that comes bundled with Emacs, which was not the case in the
+past.
+
+Emacs also comes bundled with [asoc.el](https://github.com/troyp/asoc.el) but it
+seems this library is marked as obsolete already, and you will get a warning
+about that.
+
+Other useful third-party libraries include:
+
+- [ht.el](https://github.com/Wilfred/ht.el) Hash table library
+- [kv.el](https://github.com/nicferrier/emacs-kv) A collection of tools for dealing with key/value data structures such as plists, alists and hash-tables.
+
+## Usage
+
+All functions can take association lists, hash tables, and in some cases vectors (where the index is considered the key).
 
 This library copies the names and semantics of the Clojure standard library. If you know Clojure then just add `a-` to the function name. The only exceptions are:
 
@@ -19,28 +61,13 @@ This library copies the names and semantics of the Clojure standard library. If 
 
 All functions in this library are pure, they do not mutate their arguments.
 
-## Alternatives
-
-The one unique selling point for `a.el` is that it lets you reuse your Clojure experience in Emacs, so Clojure programmers can be productive quickly. If you are not experienced in Clojure, or you want to do things "the Emacs way", then consider these alternatives.
-
-- [map.el](https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/map.el) comes bundled with recent Emacs versions
-- [asoc.el](https://github.com/troyp/asoc.el) Association list library
-- [ht.el](https://github.com/Wilfred/ht.el) Hash table library
-- [kv.el](https://github.com/nicferrier/emacs-kv) A collection of tools for dealing with key/value data structures such as plists, alists and hash-tables.
-
 ## Requirements
 
 a.el relies on features that are part of Emacs 25, so you need Emacs 25 or later. There are no other dependencies.
 
 ## Installation
 
-a.el is available from Lambda Island ELPA. Add this to your `~/.emacs` or `~/.emacs.d/init.el`
-
-``` emacs-lisp
-(require 'package)
-(add-to-list 'package-archives
-             '("lambdaisland" . "http://lambdaisland.github.io/elpa/") t)
-```
+a.el is available from [MELPA](https://github.com/melpa/melpa).
 
 ## Functions
 
