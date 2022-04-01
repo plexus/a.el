@@ -21,19 +21,23 @@ If your code works with `a.el` then we'll try to make sure it contains to work!
 `a.el` is not in accordance with [GNU ELPA](https://elpa.gnu.org/)'s naming
 guidelines, meaning it will never be part of GNU ELPA, and can not be used in
 packages that ever wish to be included in GNU ELPA. This is the reason `a.el`
-usage was removed from CIDER. It *is* available from
+usage was removed from CIDER and parseclj/parseedn. It *is* available from
 [MELPA](https://github.com/melpa/melpa).
 
-The one unique selling point for `a.el` is that it lets you reuse your Clojure
+The unique selling point for `a.el` is that it lets you reuse your Clojure
 experience in Emacs, so Clojure programmers can be productive quickly. If you
 are not experienced in Clojure, or you want to do things "the Emacs way", then
 there are other alternatives. Most functions in `a.el` can be straightforwardly
 replaced with Emacs built-ins, and as such the `a.el` code can be a great cheat
-sheet of how to do things instead. That said not every `clojure.core` has a
-straightforward equivalent, and so if you rely on those then `a.el` may still
-provide you some value.
+sheet of how to do things instead. 
 
-The main alternative to consider is the
+That said not every `clojure.core` has a straightforward equivalent, and so if
+you rely on those then `a.el` may still provide you with value. In particular
+`a.el` implements equality semantics similar to Clojure's, with value semantics
+across associative and sequential data structures. This is something that is not
+trivial to replicate with Emacs built-ins.
+
+The main alternative to `a.el` is the
 [map.el](https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/map.el)
 library that nowadays comes bundled with Emacs. You can also use Common Lisp
 style functions (i.e. `cl-*`) through requiring `cl-lib`. This is now even
